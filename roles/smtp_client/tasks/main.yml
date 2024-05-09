@@ -1,0 +1,41 @@
+---
+# tasks file
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html-single/automating_system_administration_by_using_rhel_system_roles/index#assembly_postfix-role-variables-in-system-roles_automating-system-administration-by-using-rhel-system-roles
+# https://www.redhat.com/en/blog/automating-postfix-installation-and-configuration-rhel-system-roles
+#
+# other approaches
+# https://access.redhat.com/solutions/6761851
+# Postfix Dovecot OpenLdap Mail server implementation
+# https://github.com/bertvv/ansible-role-mailserver
+
+# !!! open smtp? why? 
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/posix/firewalld_module.html
+- name: open firewall for SMTP
+  ansible.posix.firewalld:
+    service: smtp
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+- name: Mail settings
+  debug:
+    msg: "from null client {{ inventory_hostname }} to relay message.{{ lab_domain }}"
+
+- name: "Configure null client"
+  ansible.builtin.include_role: 
+    name: rhel-system-roles.postfix
+  vars: 
+    postfix_conf:
+      myhostname: "{{ inventory_hostname }}"
+      myorigin: "$mydomain"
+      relayhost: "{{ relayhost }}"
+      inet_interfaces: "loopback-only"
+      mydestination: ""
+
+# !!! no mail client by default
+# !!! install mailx?
+
+# !!! test 
+# echo "hello" | mail -s "test from client" nick@message.lab.example.com
+

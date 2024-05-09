@@ -1,0 +1,58 @@
+---
+
+- name: make a kickstart file
+  ansible.builtin.template:
+    src: "{{ kickstart_template }}"
+    dest: "{{ kickstart_path }}/{{ kickstart_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+# define and launch the guest
+#
+- name: make a script
+  ansible.builtin.template:
+    src: kvm-install.sh.j2
+    dest: "{{ kickstart_path }}/{{ fqdn }}-install.sh"
+    owner: root
+    group: root
+    mode: '0744'
+
+# assume a failure means the storage file is created and cached
+- name: create
+  ansible.builtin.command:
+    cmd: "{{ kickstart_path }}/{{ fqdn }}-install.sh"
+  register: r_virt_install
+  # !!! fails when disk already exists. 
+  # Could do with a module to compare VM against requested state.
+  ignore_errors: yes
+
+- name: display virt-install result
+  ansible.builtin.debug:
+    var: r_virt_install
+
+# !!! sleep here? 
+# error while evaluating conditional (r_virt_status['status'] == 'shutdown'): 'dict object' has no attribute 'status'.
+
+# wait for install to complete. 
+# time out after 20 retries * 30 seconds = 10 minutes
+- name: "wait up to 10 minutes for install and shut down of {{ inventory_hostname }}"
+  community.libvirt.virt:
+    command: status
+    name: "{{ fqdn }}"
+  register: r_virt_status
+  until: r_virt_status['status'] == 'shutdown'
+  retries: 20
+  delay: 30 
+  when: r_virt_install['failed'] == false
+
+# clean up
+#
+- name: remove temporary files
+  ansible.builtin.file:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ kickstart_path }}/{{ kickstart_file }}"
+    - "{{ kickstart_path }}/{{ fqdn }}-install.sh"
+

@@ -1,0 +1,19 @@
+---
+# tasks file
+
+- name: Install packages
+  ansible.builtin.yum:
+    name:
+      - haproxy
+    state: latest
+
+- name: Copy configuration
+  ansible.builtin.template:
+    src: haproxy.cfg.j2
+    dest: "/etc/haproxy/haproxy.cfg"
+
+- name: Start and enable service httpd
+  ansible.builtin.service:
+    name: haproxy
+    enabled: true
+    state: started

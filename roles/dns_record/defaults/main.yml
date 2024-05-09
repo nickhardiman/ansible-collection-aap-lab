@@ -1,0 +1,17 @@
+---
+# defaults file 
+default_password: 'Password;1'
+admin_password: "{{ default_password }}"
+
+lab_net_prefix: "192.168.134"
+lab_mac_prefix: "52:54:00:02"
+lab_domain_forward: lab.example.com
+lab_domain_reverse: "134.168.192.in-addr.arpa"
+
+record_a_name: ipsal
+record_a_value: 192.168.134.5
+record_ptr_name: 5
+record_ptr_value: ipsal.lab.example.com
+
+# ipa_fqdn:  "id.{{ lab_domain }}"
+ipa_fqdn:  "id.build.example.com"
