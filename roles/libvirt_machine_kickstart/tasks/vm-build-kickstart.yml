@@ -1,5 +1,9 @@
 ---
 
+- name: "If VM image exists, stop play here"
+  meta: end_host
+  when: hostvars[fqdn]['volume_image_file_exists']
+
 - name: make a kickstart file
   ansible.builtin.template:
     src: "{{ kickstart_template }}"
@@ -56,3 +60,8 @@
     - "{{ kickstart_path }}/{{ kickstart_file }}"
     - "{{ kickstart_path }}/{{ fqdn }}-install.sh"
 
+- name: There is now an image file
+  set_fact:
+    volume_image_file_exists: true
+  delegate_to: "{{ fqdn }}"
+  delegate_facts: true
