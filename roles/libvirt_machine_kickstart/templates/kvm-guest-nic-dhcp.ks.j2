@@ -21,8 +21,10 @@ timezone Europe/London --utc
 keyboard --vckeymap=gb
 
 # network
-network --device=enp1s0 --bootproto=dhcp --ipv6=auto --activate
-network --device=enp2s0 --bootproto=static --ip={{ nics[1]['ip'] }} --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --nodefroute --activate
+# dynamic IP address
+{% for nic in hostvars[fqdn]['nics'] %}
+network  --bootproto=dhcp --device={{ nic.name }} --ipv6=auto --activate
+{% endfor %}
 network  --hostname={{ fqdn }}
 
 # licences and repos
@@ -56,7 +58,7 @@ skipx
 services --enabled="chronyd"
 selinux --enforcing
 # open firewall
-{% set service_options = " --service=" ~ net_services|join(" --service=") %}
+{% set service_options = " --service=" ~ hostvars[fqdn]['net_services']|join(" --service=") %}
 firewall --enabled {{ service_options }}
 
 # after installing the OS
@@ -76,20 +78,23 @@ reboot
 @^minimal-environment
 # single package
 kexec-tools
+tuned
 # These packages provide a selection of sysadmin tools for manual work.
 bash-completion
 bind-utils
+cockpit
 lsof
 mlocate
 nmap-ncat
 vim
 tcpdump
 telnet
+tmux
 tree
 # This package is for creating a server private key.
 python3-cryptography
 # These packages are required for applications.
-{% for package in RPMs %}
+{% for package in hostvars[fqdn]['RPMs'] %}
 {{ package }}
 {% endfor %}
 %end
@@ -119,11 +124,4 @@ restorecon -vR /home/{{ user_ansible_name }}/.ssh/
 # Allow passwordless sudo.
 echo "{{ user_ansible_name }}      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/{{ user_ansible_name }}
 
-# subscription
-# !!! moved to another role
-# use your Red Hat developer account
-#/usr/sbin/subscription-manager register --username={{ rhsm_user }} --password='{{ rhsm_password }}'
-#/usr/sbin/subscription-manager attach --pool={{ rhsm_pool_id }}
-
 %end
-

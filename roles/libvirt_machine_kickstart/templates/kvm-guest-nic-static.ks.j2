@@ -22,7 +22,7 @@ keyboard --vckeymap=gb
 
 # network
 # fixed IP address
-{% for nic in nics %}
+{% for nic in hostvars[fqdn]['nics'] %}
 network  --device={{ nic['name'] }} --bootproto=static --ip={{ nic['ip'] }} --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --activate
 {% endfor %}
 network  --hostname={{ fqdn }}
@@ -58,7 +58,7 @@ skipx
 services --enabled="chronyd"
 selinux --enforcing
 # open firewall
-{% set service_options = " --service=" ~ net_services|join(" --service=") %}
+{% set service_options = " --service=" ~ hostvars[fqdn]['net_services']|join(" --service=") %}
 firewall --enabled {{ service_options }}
 
 # after installing the OS
@@ -94,7 +94,7 @@ tree
 # This package is for creating a server private key.
 python3-cryptography
 # These packages are required for applications.
-{% for package in RPMs %}
+{% for package in hostvars[fqdn]['RPMs'] %}
 {{ package }}
 {% endfor %}
 %end
@@ -114,6 +114,7 @@ python3-cryptography
 mkdir -m0700 /home/{{ user_ansible_name }}/.ssh/
 cat <<EOF >/home/{{ user_ansible_name }}/.ssh/authorized_keys
 {{ user_ansible_public_key }}
+{{ user_admin_public_key }}
 EOF
 # fix ownership and permissions
 chown -R {{ user_ansible_name }}:{{ user_ansible_name }} /home/{{ user_ansible_name }}/.ssh
@@ -121,7 +122,7 @@ chmod 0600 /home/{{ user_ansible_name }}/.ssh/authorized_keys
 # fix up selinux context
 restorecon -vR /home/{{ user_ansible_name }}/.ssh/
 # Allow passwordless sudo.
-echo "ansible_user      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/ansible_user
+echo "{{ user_ansible_name }}      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/{{ user_ansible_name }}
 
 %end
 

@@ -21,8 +21,8 @@ timezone Europe/London --utc
 keyboard --vckeymap=gb
 
 # network
-# fixed IP address
-network --device=enp1s0 --bootproto=static --ip={{ nics[0]['ip'] }} --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --activate
+network --device=enp1s0 --bootproto=dhcp --ipv6=auto --activate
+network --device=enp2s0 --bootproto=static --ip={{ hostvars[fqdn]['nics'][1]['ip'] }} --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --nodefroute --activate
 network  --hostname={{ fqdn }}
 
 # licences and repos
@@ -56,7 +56,7 @@ skipx
 services --enabled="chronyd"
 selinux --enforcing
 # open firewall
-{% set service_options = " --service=" ~ net_services|join(" --service=") %}
+{% set service_options = " --service=" ~ hostvars[fqdn]['net_services']|join(" --service=") %}
 firewall --enabled {{ service_options }}
 
 # after installing the OS
@@ -76,20 +76,23 @@ reboot
 @^minimal-environment
 # single package
 kexec-tools
+tuned
 # These packages provide a selection of sysadmin tools for manual work.
 bash-completion
 bind-utils
+cockpit
 lsof
 mlocate
 nmap-ncat
 vim
 tcpdump
 telnet
+tmux
 tree
 # This package is for creating a server private key.
 python3-cryptography
 # These packages are required for applications.
-{% for package in RPMs %}
+{% for package in hostvars[fqdn]['RPMs'] %}
 {{ package }}
 {% endfor %}
 %end
@@ -109,6 +112,7 @@ python3-cryptography
 mkdir -m0700 /home/{{ user_ansible_name }}/.ssh/
 cat <<EOF >/home/{{ user_ansible_name }}/.ssh/authorized_keys
 {{ user_ansible_public_key }}
+{{ user_admin_public_key }}
 EOF
 # fix ownership and permissions
 chown -R {{ user_ansible_name }}:{{ user_ansible_name }} /home/{{ user_ansible_name }}/.ssh
@@ -116,7 +120,7 @@ chmod 0600 /home/{{ user_ansible_name }}/.ssh/authorized_keys
 # fix up selinux context
 restorecon -vR /home/{{ user_ansible_name }}/.ssh/
 # Allow passwordless sudo.
-echo "ansible_user      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/ansible_user
+echo "{{ user_ansible_name }}      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/{{ user_ansible_name }}
 
 %end
 
