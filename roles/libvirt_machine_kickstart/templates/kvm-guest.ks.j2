@@ -110,6 +110,7 @@ python3-cryptography
 mkdir -m0700 /home/{{ user_ansible_name }}/.ssh/
 cat <<EOF >/home/{{ user_ansible_name }}/.ssh/authorized_keys
 {{ user_ansible_public_key }}
+{{ user_admin_public_key }}
 EOF
 # fix ownership and permissions
 chown -R {{ user_ansible_name }}:{{ user_ansible_name }} /home/{{ user_ansible_name }}/.ssh

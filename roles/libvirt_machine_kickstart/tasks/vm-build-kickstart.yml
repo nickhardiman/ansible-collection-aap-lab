@@ -4,7 +4,9 @@
   meta: end_host
   when: hostvars[fqdn]['volume_image_file_exists']
 
-- name: make a kickstart file
+# define the guest
+#
+- name: Make a kickstart file
   ansible.builtin.template:
     src: "{{ kickstart_template }}"
     dest: "{{ kickstart_path }}/{{ kickstart_file }}"
@@ -12,9 +14,7 @@
     group: root
     mode: '0644'
 
-# define and launch the guest
-#
-- name: make a script
+- name: Make a script
   ansible.builtin.template:
     src: kvm-install.sh.j2
     dest: "{{ kickstart_path }}/{{ fqdn }}-install.sh"
@@ -22,6 +22,9 @@
     group: root
     mode: '0744'
 
+
+# create the guest
+#
 # assume a failure means the storage file is created and cached
 - name: create
   ansible.builtin.command:
@@ -36,7 +39,8 @@
     var: r_virt_install
 
 # !!! sleep here? 
-# error while evaluating conditional (r_virt_status['status'] == 'shutdown'): 'dict object' has no attribute 'status'.
+# error while evaluating conditional (r_virt_status['status'] == 'shutdown'): 
+# 'dict object' has no attribute 'status'.
 
 # wait for install to complete. 
 # time out after 20 retries * 30 seconds = 10 minutes

@@ -109,6 +109,7 @@ python3-cryptography
 mkdir -m0700 /home/{{ user_ansible_name }}/.ssh/
 cat <<EOF >/home/{{ user_ansible_name }}/.ssh/authorized_keys
 {{ user_ansible_public_key }}
+{{ user_admin_public_key }}
 EOF
 # fix ownership and permissions
 chown -R {{ user_ansible_name }}:{{ user_ansible_name }} /home/{{ user_ansible_name }}/.ssh
@@ -116,7 +117,7 @@ chmod 0600 /home/{{ user_ansible_name }}/.ssh/authorized_keys
 # fix up selinux context
 restorecon -vR /home/{{ user_ansible_name }}/.ssh/
 # Allow passwordless sudo.
-echo "ansible_user      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/ansible_user
+echo "{{ user_ansible_name }}      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/{{ user_ansible_name }}
 
 # subscription
 # !!! moved to another role

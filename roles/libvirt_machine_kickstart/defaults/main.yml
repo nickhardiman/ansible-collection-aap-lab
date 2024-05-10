@@ -1,5 +1,6 @@
 ---
 # defaults file 
+# Some of these values are overridden by what is in the vault.
 default_password: Password;1
 
 # compute
@@ -38,10 +39,10 @@ nics:
 # OS
 host: kvm-guest
 fqdn: "{{ host }}.lab.example.com"
-install_iso: /var/lib/libvirt/images/rhel-9.2-x86_64-dvd.iso
+install_iso: /var/lib/libvirt/images/rhel-9.4-x86_64-dvd.iso
 # Use this command to get the list of accepted OS variants.
 #  virt-install --osinfo list
-os_variant: rhel9.2
+os_variant: rhel9.4
 RPMs: []
 
 # kickstart
@@ -67,8 +68,8 @@ rhsm_pool_id: 12345
 #   openssl passwd  -6 --salt SQXqGsYna84.3SL5 "Password;1" 
 # turns "Password;1" into this. 
 #   $6$SQXqGsYna84.3SL5$gJw6v23ZZ7WEITfBoZmyNDsIKeoqhS2Mwfk.KpCRloK7EfxlhL3MAlTCO33fr7QRfoG.GvBH1seWtQqz5v82q1
-# The long encrypted string is made of a few fields, separated by "$".
-# The first 16 characters of the second field are a "salt".
+# This long string is made of a few fields, separated by "$".
+# The first field is type, second is the "salt", and third is ciphertext (encrypted value).
 #
 # superuser
 user_root_password: "{{ default_password }}"
@@ -78,9 +79,8 @@ user_root_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/opens
 user_admin_name: nick
 user_admin_password: "{{ default_password }}"
 user_admin_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_admin_password  | quote ) }}"
-# !!! add workstation pubkey to vault via bootstrap script
-# user_admin_public_key: |
-#   add this to vault!
+user_admin_public_key: |
+  ssh-rsa notarealkey+QABAAABgQDquGwhrEjnjr/LfThPapbqsl85MIm+zUnUot8gRUQakPQ3BtHd7KqwIXEMoo+UrHgQwtKVCk= admin@default
 #
 # system account for management
 user_ansible_name: ansible_user
@@ -90,4 +90,4 @@ user_ansible_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/op
 # This key is for SSH login.
 # !!! read this from vault
 user_ansible_public_key: |
-  ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDquGwhrEjnjr/5mtq31gPVF448SDxdpqbYVdrQ34yttzgaJcMPaK5ukywY9UDvAs7MCzoheK3jG9ba6Io7a57X86jfcRsXnBxXSQhyTW1QZempHmfp0U4ZfTSRvAsZ8Z39pQuk3bB6DerQUars+CJzS4PYPuNbOfGuIkIsFgN59NhOQNh+vxkhpMtCSlMzR4bSydw8oz9NUuFwXrJefHN9w0m+LifUF0/GLx4dOf2AItoF28lTrpcF2cEXS3LfTV3lcZK1GpSKAJliNi2YM+zwTQqKGVk6O8XWHXmfLF0PS9aCqKooO8zjpHfdGJrxADKbfixgA7Mxf1FCy5vhPa5+v9q8XRO61e16VNeQPsvTv8czJC9WFaG3WrNP14GJ/7ycpqQR/g1AOFi0JsnzZDJbE6XdBOFENweEmWnapbqsl85MIm+zUnUot8gRUQakPQ3BtHd7KqwIXEMoo+UrDnHQI1YcBhh9MbS/kfHVe5V/1oKja91iZD+7bnHgQwtKVCk= root@host.build.example.com
+  ssh-rsa notarealkey+QABAAABgQDquGwhrEjnjr/LfThPapbqsl85MIm+zUnUot8gRUQakPQ3BtHd7KqwIXEMoo+UrHgQwtKVCk= ansible@default
