@@ -32,6 +32,7 @@
     owner: root
     group: root
     mode: '0644'
+  when: not hostvars[fqdn]['volume_image_file_exists']
 
 - name: "Make script {{ fqdn }}:{{ kickstart_path }}/{{ fqdn }}-install.sh"
   ansible.builtin.template:
@@ -40,6 +41,7 @@
     owner: root
     group: root
     mode: '0744'
+  when: not hostvars[fqdn]['volume_image_file_exists']
 
 
 # create the guest
@@ -88,6 +90,8 @@
     - "{{ kickstart_path }}/{{ fqdn }}-install.sh"
   loop_control:
     loop_var: l_file
+  when: not hostvars[fqdn]['volume_image_file_exists']
+
 
 # Fail if no storage volume was created.
 #
