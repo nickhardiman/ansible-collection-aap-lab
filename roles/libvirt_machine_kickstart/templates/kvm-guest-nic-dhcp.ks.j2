@@ -85,6 +85,7 @@ bind-utils
 cockpit
 lsof
 mlocate
+nmap
 nmap-ncat
 vim
 tcpdump
@@ -109,9 +110,23 @@ python3-cryptography
 # last jobs
 %post --log=/root/ks-post.log
 
+# !!! put this in a loop
 # admin user
+# key-based login
+mkdir -m0700 /home/{{ user_admin_name }}/.ssh/
+cat <<EOF >/home/{{ user_admin_name }}/.ssh/authorized_keys
+{{ user_admin_public_key }}
+EOF
+# fix ownership and permissions
+chown -R {{ user_admin_name }}:{{ user_admin_name }} /home/{{ user_admin_name }}/.ssh
+chmod 0600 /home/{{ user_admin_name }}/.ssh/authorized_keys
+# fix up selinux context
+restorecon -vR /home/{{ user_admin_name }}/.ssh/
 # Allow passwordless sudo.
 echo "{{ user_admin_name }}      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/{{ user_admin_name }}
+# CLI prompt. Also see "better_prompt" here:
+# https://github.com/nickhardiman/ansible-playbook-aap2-refarch/blob/main/files/aap-bootstrap-1-ssh-sudo.sh
+echo "PS1='[\u@\H \W]$ '" >> /home/{{ user_admin_name }}/.bashrc
 
 # ansible user
 # key-based login
@@ -127,5 +142,25 @@ chmod 0600 /home/{{ user_ansible_name }}/.ssh/authorized_keys
 restorecon -vR /home/{{ user_ansible_name }}/.ssh/
 # Allow passwordless sudo.
 echo "{{ user_ansible_name }}      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/{{ user_ansible_name }}
+# CLI prompt. Also see "better_prompt" here:
+# https://github.com/nickhardiman/ansible-playbook-aap2-refarch/blob/main/files/aap-bootstrap-1-ssh-sudo.sh
+echo "PS1='[\u@\H \W]$ '" >> /home/{{ user_ansible_name }}/.bashrc
+
+# root user
+# key-based login
+mkdir -m0700 /root/.ssh/
+cat <<EOF >/root/.ssh/authorized_keys
+{{ user_ansible_public_key }}
+{{ user_admin_public_key }}
+EOF
+chmod 0600 /root/.ssh/authorized_keys
+# fix up selinux context
+restorecon -vR /root/.ssh/
+# CLI prompt. Also see "better_prompt" here:
+# https://github.com/nickhardiman/ansible-playbook-aap2-refarch/blob/main/files/aap-bootstrap-1-ssh-sudo.sh
+echo "PS1='[\u@\H \W]$ '" >> /root/.bashrc
+
+# cockpit
+systemctl enable cockpit.socket
 
 %end

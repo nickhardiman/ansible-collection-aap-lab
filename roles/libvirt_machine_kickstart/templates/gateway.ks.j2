@@ -156,7 +156,7 @@ chmod 0600 /root/.ssh/authorized_keys
 restorecon -vR /root/.ssh/
 # CLI prompt. Also see "better_prompt" here:
 # https://github.com/nickhardiman/ansible-playbook-aap2-refarch/blob/main/files/aap-bootstrap-1-ssh-sudo.sh
-echo "PS1='[\u@\H \W]$ '" >> /home/{{ user_ansible_name }}/.bashrc
+echo "PS1='[\u@\H \W]$ '" >> /root/.bashrc
 
 # cockpit
 systemctl enable cockpit.socket
