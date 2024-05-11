@@ -12,6 +12,7 @@
 - name: Look for the machine base volume.
   ansible.builtin.stat:
     path: "/var/lib/libvirt/images/{{ item }}-base.qcow2"
+    get_checksum: false
   register: r_volume_base
 
 - name: "does the volume '/var/lib/libvirt/images/{{ item }}-base.qcow2' already exist?"
@@ -25,6 +26,7 @@
 - name: Look for the machine image volume.  
   ansible.builtin.stat: 
     path: "/var/lib/libvirt/images/{{ item }}.qcow2"
+    get_checksum: false
   register: r_volume_image
   
 - name: "does the volume '/var/lib/libvirt/images/{{ item }}.qcow2' already exist?"

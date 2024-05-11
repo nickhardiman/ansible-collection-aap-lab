@@ -109,6 +109,10 @@ python3-cryptography
 # last jobs
 %post --log=/root/ks-post.log
 
+# admin user
+# Allow passwordless sudo.
+echo "{{ user_admin_name }}      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/{{ user_admin_name }}
+
 # ansible user
 # key-based login
 mkdir -m0700 /home/{{ user_ansible_name }}/.ssh/

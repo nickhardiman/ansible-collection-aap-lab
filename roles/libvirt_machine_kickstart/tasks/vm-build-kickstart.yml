@@ -5,12 +5,12 @@
     var: l_var
     verbosity: 1
   loop:
-  - "{{fqdn}}"
-  - "{{kickstart_path}}"
-  - "{{kickstart_file}}"
-  - "{{user_ansible_name}}"
-  - "{{user_ansible_public_key}}"
-  - "{{user_admin_public_key}}"
+  - "{{ fqdn }}"
+  - "{{ kickstart_path }}"
+  - "{{ kickstart_file }}"
+  - "{{ user_ansible_name }}"
+  - "{{ user_ansible_public_key }}"
+  - "{{ user_admin_public_key }}"
   - "{{ hostvars[fqdn]['kickstart_template'] }}"
   - "{{ hostvars[fqdn]['nics'] }}"
   - "{{ hostvars[fqdn]['RPMs'] }}"
@@ -25,7 +25,7 @@
 
 # define the guest
 #
-- name: "Make kickstart file {{ fqdn }}:{{ kickstart_path }}/{{ kickstart_file }}"
+- name: "Make kickstart file for {{ fqdn }}, {{ inventory_hostname }}:{{ kickstart_path }}/{{ kickstart_file }}"
   ansible.builtin.template:
     src: "{{ hostvars[fqdn]['kickstart_template'] }}"
     dest: "{{ kickstart_path }}/{{ kickstart_file }}"
@@ -34,7 +34,7 @@
     mode: '0644'
   when: not hostvars[fqdn]['volume_image_file_exists']
 
-- name: "Make script {{ fqdn }}:{{ kickstart_path }}/{{ fqdn }}-install.sh"
+- name: "Make install script for {{ fqdn }}, {{ inventory_hostname }}:{{ kickstart_path }}/{{ fqdn }}-install.sh"
   ansible.builtin.template:
     src: kvm-install.sh.j2
     dest: "{{ kickstart_path }}/{{ fqdn }}-install.sh"
@@ -46,13 +46,14 @@
 
 # create the guest
 #
+# !!! fails when disk already exists.
+# Could do with a module to compare VM against requested state.
 # assume a failure means the storage file is created and cached
 - name: Create
   ansible.builtin.command:
     cmd: "{{ kickstart_path }}/{{ fqdn }}-install.sh"
   register: r_virt_install
-  # !!! fails when disk already exists. 
-  # Could do with a module to compare VM against requested state.
+  changed_when: r_virt_install.rc == 0 
   ignore_errors: true
   when: not hostvars[fqdn]['volume_image_file_exists']
 
@@ -98,12 +99,13 @@
 - name: "Check if image file was created: /var/lib/libvirt/images/{{ fqdn }}.qcow2" 
   ansible.builtin.stat:
     path: "/var/lib/libvirt/images/{{ fqdn }}.qcow2"
-  register: result
+    get_checksum: false
+  register: r_qcow2
 #
-- name: Show result
+- name: Fail if image file was not created
   ansible.builtin.fail:
     msg: "Storage volume was not created: /var/lib/libvirt/images/{{ fqdn }}.qcow2"
-  when: not result.stat.exists
+  when: not r_qcow2.stat.exists
 
 - name: Display update
   ansible.builtin.debug:
