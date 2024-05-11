@@ -12,7 +12,7 @@
     src: haproxy.cfg.j2
     dest: "/etc/haproxy/haproxy.cfg"
 
-- name: Start and enable service httpd
+- name: Start and enable service haproxy
   ansible.builtin.service:
     name: haproxy
     enabled: true

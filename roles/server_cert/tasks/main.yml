@@ -3,10 +3,10 @@
 
 # files 
 # CA private key
-#    password protected
-#    hypervisor:/etc/pki/tls/private/ca-certificate.key
+#    password protected?
+#    hypervisor:/etc/pki/tls/private/{{ ca_fqdn }}-key.pem  
 # CA certificate 
-#    hypervisor:/etc/pki/ca-trust/source/anchors/ca-certificate.pem
+#    hypervisor:/etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem  
 # server private key
 #    server:"/etc/pki/tls/private/{{ server_cn }}.key"
 # server CSR
@@ -17,35 +17,30 @@
 
 # CA certificate 
 #
-- name: Copy CA certificate to trust anchors /etc/pki/ca-trust/source/anchors/ca-certificate.pem
+- name: "Copy CA certificate to trust anchors /etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem"
   ansible.builtin.copy:
-    src: /etc/pki/ca-trust/source/anchors/ca-certificate.pem
-    #src: ca-certificate.pem
-    dest: /etc/pki/ca-trust/source/anchors/ca-certificate.pem
+    src: /etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem
+    dest: /etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem
     mode: '0644'
   register: r_cp_ca_cert
-
-- name: Update libraries of trusted CA certificates
-  ansible.builtin.command:
-    cmd: update-ca-trust
-  when: r_cp_ca_cert['changed'] == true
+  notify: Update libraries of trusted CA certificates
 
 # server private key
 #
 # create private key {{ server_cn }}.key
-# check with 
+# check with
 #   openssl rsa -check -noout -in {{ server_cn }}.key
 - name: "Create server private key /etc/pki/tls/private/{{ server_cn }}.key"
   community.crypto.openssl_privatekey:
     path: "/etc/pki/tls/private/{{ server_cn }}.key"
     mode: '0600'
-    #passphrase: "{{ server_secret_passphrase }}"
-    #cipher: auto
+    # passphrase: "{{ server_secret_passphrase }}"
+    # cipher: auto
 
 # server certificate signing request
 #
 # create certificate and signing request {{ server_cn }}.csr
-# View attributes and values in the CSR. 
+# View attributes and values in the CSR.
 #   openssl req -text -in {{ server_cn }}.csr
 - name: Generate an OpenSSL CSR (Certificate Signing Request) for the server
   community.crypto.openssl_csr_pipe:
@@ -60,7 +55,7 @@
 # View attributes and values in the new certificate.
 #   openssl x509 -in {{ server_cn }}.pem -noout -text
 # Check the certificate chain.
-#   openssl verify -CAfile  ca-certificate.pem  {{ server_cn }}.pem
+#   openssl verify -CAfile  {{ ca_fqdn }}-cert.pem  {{ server_cn }}.pem
 # Check the server certificate and key match by comparing the modulus of each.
 #   openssl x509 -noout -modulus -in {{ server_cn }}.pem | openssl md5
 #   openssl rsa  -noout -modulus -in {{ server_cn }}.key | openssl md5
@@ -68,8 +63,8 @@
   community.crypto.x509_certificate_pipe:
     csr_content: "{{ r_csr['csr'] }}"
     provider: ownca
-    ownca_path: /etc/pki/ca-trust/source/anchors/ca-certificate.pem
-    ownca_privatekey_path: /etc/pki/tls/private/ca-certificate.key
+    ownca_path: /etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem
+    ownca_privatekey_path: /etc/pki/tls/private/{{ ca_fqdn }}-key.pem
     # !!! removed encryption. See bootstrap.sh
     # ownca_privatekey_passphrase: "{{ ca_secret_passphrase }}"
     ownca_not_after: +365d  # valid for one year

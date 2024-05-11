@@ -7,17 +7,17 @@
     state: latest
   register: r_dnf
 
-- debug:
+- name: Display
+  ansible.builtin.debug:
     var: r_dnf
 
-- name: can the OS survive another reboot? 
+- name: Can the OS survive another reboot?
   ansible.builtin.reboot:
   when: r_dnf['changed'] == true
 
-- name: "can we ping {{ inventory_hostname }} after the reboot?"
+- name: "Can we ping {{ inventory_hostname }} after the reboot?"
   ansible.builtin.wait_for_connection:
     delay: 10
     timeout: 30
   delegate_to: "{{ inventory_hostname }}"
-
 
