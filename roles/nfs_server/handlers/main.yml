@@ -1,0 +1,6 @@
+---
+# handlers file 
+
+- name: Apply changes to the exports file
+  ansible.builtin.command:
+    cmd: /usr/sbin/exportfs -ra
