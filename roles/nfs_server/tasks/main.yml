@@ -59,16 +59,19 @@
     state: enabled
     immediate: true
 
-
-Enable and start the NFS server
-# systemctl mask --now rpc-statd.service rpcbind.service rpcbind.socket
 - name: Enable and start the NFS server
   ansible.builtin.systemd_service:
     name: nfs-server
     enabled: true
+    state: started
 
-
-
-- name: Verify that the server provides only the NFS versions that you have configured
+- name: Load nfs versions
+  ansible.builtin.slurp:
+    src: /proc/fs/nfsd/versions
+  register: r_slurp
+- name: Decode data and store as fact
+  ansible.builtin.set_fact:
+    nfs_versions: "{{ r_slurp.content | ansible.builtin.b64decode }}"
+- name: Display nfs versions
   ansible.builtin.debug:
-    msg: "cat /proc/fs/nfsd/versions: {{ lookup('ansible.builtin.file', '/proc/fs/nfsd/versions') }}"
+    msg: "/proc/fs/nfsd/versions: {{ r_slurp.content | ansible.builtin.b64decode }}"
