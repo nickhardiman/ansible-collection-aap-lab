@@ -31,8 +31,9 @@
   ansible.builtin.file:
     path: "{{ item.directory }}"
     state: directory
-    mode: '2770'
+    owner: "{{ item.user }}"
     group: "{{ item.group }}"
+    mode: '2770'
     setype: "{{ item.selinux_file_context_type }}"
     # recurse: true
   loop: "{{ directories_to_export }}"
@@ -48,12 +49,25 @@
   loop: "{{ directories_to_export }}"
   notify: Apply changes to the exports file
 
+# - name: Force all notified handlers to run at this point, not waiting for normal sync points
+#   ansible.builtin.meta: flush_handlers
+
 - name: Open the relevant ports in firewalld
   ansible.posix.firewalld:
     service: nfs
     permanent: true
     state: enabled
     immediate: true
+
+
+Enable and start the NFS server
+# systemctl mask --now rpc-statd.service rpcbind.service rpcbind.socket
+- name: Enable and start the NFS server
+  ansible.builtin.systemd_service:
+    name: nfs-server
+    enabled: true
+
+
 
 - name: Verify that the server provides only the NFS versions that you have configured
   ansible.builtin.debug:

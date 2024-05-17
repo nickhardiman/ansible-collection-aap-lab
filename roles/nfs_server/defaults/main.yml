@@ -3,10 +3,12 @@
 
 directories_to_export:
   - directory: /nfs/projects/pulp
+    user: pulp
     group: pulp
     selinux_file_context_type: nfs_t
-    nfs_options: '(rw,no_root_squash)'
+    nfs_options: '*(rw,no_root_squash)'
   - directory: /nfs/projects/pulpcore_static
+    user: pulp
     group: pulp
-    selinux_file_context_type: var_lib_t
-    nfs_options: '(rw,no_root_squash)'
+    selinux_file_context_type: httpd_sys_rw_content_t
+    nfs_options: '*(rw,no_root_squash)'
