@@ -13,6 +13,9 @@
 #    stored in-memory, not written to a file
 # server certificate 
 #    server:"/etc/pki/tls/private/{{ server_cn }}.key"
+# check
+# view certificate SANs (subject alternative names)
+#    openssl x509 -in /etc/pki/tls/certs/{{ server_cn }}.pem -ext subjectAltName  -noout
 
 
 # CA certificate 
@@ -46,6 +49,7 @@
   community.crypto.openssl_csr_pipe:
     privatekey_path: "/etc/pki/tls/private/{{ server_cn }}.key"
     common_name: "{{ server_cn }}"
+    subject_alt_name: "{{ subject_alt_name | default(omit) }}"
   register: r_csr
 
 # server certificate
@@ -73,6 +77,6 @@
   register: r_cert
 
 - name: "Write certificate to /etc/pki/tls/certs/{{ server_cn }}.pem"
-  copy:
+  ansible.builtin.copy:
     dest: "/etc/pki/tls/certs/{{ server_cn }}.pem"
     content: "{{ r_cert['certificate'] }}"
