@@ -47,7 +47,7 @@
     group: root
     mode: '0644'
   loop: "{{ directories_to_export }}"
-  notify: Apply changes to the exports file
+  notify: Reexport
 
 # - name: Force all notified handlers to run at this point, not waiting for normal sync points
 #   ansible.builtin.meta: flush_handlers
@@ -65,7 +65,7 @@
     enabled: true
     state: started
 
-- name: Load nfs versions
+- name: Load nfs versions from /proc/fs/nfsd/versions
   ansible.builtin.slurp:
     src: /proc/fs/nfsd/versions
   register: r_slurp
@@ -75,3 +75,12 @@
 - name: Display nfs versions
   ansible.builtin.debug:
     msg: "/proc/fs/nfsd/versions: {{ r_slurp.content | ansible.builtin.b64decode }}"
+
+- name: Load mount points
+  ansible.builtin.command:
+    cmd: /usr/sbin/exportfs
+  register: r_exportfs
+  changed_when: false
+- name: Display available nfs mounts
+  ansible.builtin.debug:
+    msg: "exported mounts: {{ r_exportfs['stdout_lines'] }}"
