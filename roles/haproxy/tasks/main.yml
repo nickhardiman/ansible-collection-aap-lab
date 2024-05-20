@@ -9,11 +9,33 @@
 
 - name: Copy configuration
   ansible.builtin.template:
-    src: haproxy.cfg.j2
+    src: "{{ haproxy_config_file_template }}"
     dest: "/etc/haproxy/haproxy.cfg"
+  notify: Reload haproxy
 
 - name: Start and enable service haproxy
   ansible.builtin.service:
     name: haproxy
     enabled: true
     state: started
+
+- name: Permit service traffic to plaintext web
+  ansible.posix.firewalld:
+    service: http
+    immediate: true
+    permanent: true
+    state: enabled
+
+- name: Permit service traffic to encrypted web
+  ansible.posix.firewalld:
+    service: https
+    immediate: true
+    permanent: true
+    state: enabled
+
+- name: Permit service traffic to scoreboard
+  ansible.posix.firewalld:
+    port: 9000/tcp
+    immediate: true
+    permanent: true
+    state: enabled

@@ -1,0 +1,122 @@
+# !!! not actually a template yet. No vars.
+# docs
+#   https://docs.haproxy.org/2.4/configuration.html
+#---------------------------------------------------------------------
+# Global settings
+#
+global
+    # View activity log messages with these commands.
+    #   grep haproxy /var/log/messages
+    #   journalctl -u haproxy.service
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+    # utilize system-wide crypto-policies
+    ssl-default-bind-ciphers PROFILE=SYSTEM
+    ssl-default-server-ciphers PROFILE=SYSTEM
+    #ssl-default-bind-options ssl-min-ver TLSv1.2
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    # option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+# redirect port 80 to port 443
+#
+frontend www_http
+  bind *:80
+  http-request redirect scheme https unless { ssl_fc }
+
+#---------------------------------------------------------------------
+# one web site with many paths
+#
+frontend www_https
+  mode tcp
+  bind *:443
+  option tcplog
+
+  acl tls              req.ssl_hello_type 1
+  tcp-request inspect-delay 5s
+  tcp-request content accept if tls
+
+  acl host_aapcontrol_site1  req.ssl_sni -i     controlplane.site1.example.com
+  acl host_aapcontrol_site1  req.ssl_sni -i     controlplane-site1.home
+  acl host_aaphub_site1      req.ssl_sni -i     automationhub.site1.example.com
+  acl host_aaphub_site1      req.ssl_sni -i     automationhub-site1.home
+  acl host_aapcontrol_site2  req.ssl_sni -i     controlplane.site2.example.com
+  acl host_aapcontrol_site2  req.ssl_sni -i     controlplane-site2.home
+  acl host_aaphub_site2      req.ssl_sni -i     automationhub.site2.example.com
+  acl host_aaphub_site2      req.ssl_sni -i     automationhub-site2.home
+
+  use_backend https_aapcontrol_site1 if host_aapcontrol_site1
+  use_backend https_aaphub_site1     if host_aaphub_site1
+  use_backend https_aapcontrol_site2 if host_aapcontrol_site2
+  use_backend https_aaphub_site2     if host_aaphub_site2
+
+#---------------------------------------------------------------------
+# proxy to where
+#
+
+backend https_aapcontrol_site1
+        mode tcp
+        option ssl-hello-chk
+        server   controlplane-1.site1.example.com  192.168.21.10:443
+        server   controlplane-2.site1.example.com  192.168.21.11:443
+        server   controlplane-3.site1.example.com  192.168.21.12:443
+
+backend https_aaphub_site1
+        mode tcp
+        option ssl-hello-chk
+        server  automationhub-1.site1.example.com  192.168.21.17:443
+        server  automationhub-2.site1.example.com  192.168.21.18:443
+        server  automationhub-3.site1.example.com  192.168.21.19:443
+
+backend https_aapcontrol_site2
+        mode tcp
+        option ssl-hello-chk
+        server   controlplane-1.site2.example.com  192.168.23.10:443
+        server   controlplane-2.site2.example.com  192.168.23.11:443
+        server   controlplane-3.site2.example.com  192.168.23.12:443
+
+backend https_aaphub_site2
+        mode tcp
+        option ssl-hello-chk
+        server  automationhub-1.site2.example.com  192.168.23.17:443
+        server  automationhub-2.site2.example.com  192.168.23.18:443
+        server  automationhub-3.site2.example.com  192.168.23.19:443
+
+#---------------------------------------------------------------------
+# dashboard
+#
+listen stats
+    bind :9000
+    stats enable
+    stats uri /
+#---------------------------------------------------------------------
