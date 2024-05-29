@@ -1,19 +1,26 @@
 ---
 # tasks file for server_cert
 
-# files 
+# trust the CA certificate and create a server certificate
+#
+# files used on the controller node
 # CA private key
 #    password protected?
-#    hypervisor:/etc/pki/tls/private/{{ ca_fqdn }}-key.pem  
-# CA certificate 
-#    hypervisor:/etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem  
+#    controller:/etc/pki/tls/private/{{ ca_fqdn }}-key.pem
+# CA certificate
+#    controller:/etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem
+#
+# files created on the managed node
 # server private key
 #    server:"/etc/pki/tls/private/{{ server_cn }}.key"
 # server CSR
 #    stored in-memory, not written to a file
-# server certificate 
+# CA certificate
+#    server:/etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem
+# server certificate
 #    server:"/etc/pki/tls/private/{{ server_cn }}.key"
-# check
+#
+# checks
 # view certificate SANs (subject alternative names)
 #    openssl x509 -in /etc/pki/tls/certs/{{ server_cn }}.pem -ext subjectAltName  -noout
 
