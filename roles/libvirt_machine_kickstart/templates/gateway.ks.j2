@@ -21,9 +21,12 @@ timezone Europe/London --utc
 keyboard --vckeymap=gb
 
 # network
+# from Ansible group_vars and host_vars
 network --device=enp1s0 --bootproto=dhcp --ipv6=auto --activate
-network --device=enp2s0 --bootproto=static --ip={{ hostvars[fqdn]['nics'][1]['ip'] }} --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --nodefroute --activate
+network --device=enp2s0 --bootproto=static --ip={{ hostvars[fqdn]['nics'][1]['ip'] }} --netmask=255.255.255.0 --gateway={{ hostvars[fqdn]['lab_net_prefix'] }}.1 --nodefroute --activate
 network  --hostname={{ fqdn }}
+
+
 
 # licences and repos
 # And have a look at the "subscription" section, in the post section below. 
@@ -31,6 +34,7 @@ network  --hostname={{ fqdn }}
 eula --agreed
 
 # accounts
+# from the Ansible vault
 # These commands set up password-based login.
 # for key-based login, check out 'sshkey --username=user "ssh_key"'.
 rootpw                                       --iscrypted "{{ user_root_password_encrypted }}"
@@ -44,10 +48,10 @@ ignoredisk --only-use=vda
 clearpart --all --initlabel
 part /boot/efi --fstype="efi"   --ondisk=vda --size=600 --fsoptions="umask=0077,shortname=winnt"
 part /boot     --fstype="xfs"   --ondisk=vda --size=1024
-part pv.03     --fstype="lvmpv" --ondisk=vda --size={{ pv_size }}
+part pv.03     --fstype="lvmpv" --ondisk=vda --size={{ hostvars[fqdn]['pv_size'] }}
 volgroup rhel pv.03
-logvol /       --fstype="xfs"  --size={{ lv_root }}  --name=root --vgname=rhel
-logvol /var    --fstype="xfs"  --size={{ lv_var }}  --name=var  --vgname=rhel
+logvol /       --fstype="xfs"  --size={{ hostvars[fqdn]['lv_root'] }}  --name=root --vgname=rhel
+logvol /var    --fstype="xfs"  --size={{ hostvars[fqdn]['lv_var'] }}   --name=var  --vgname=rhel
 logvol swap    --fstype="swap" --size=256    --name=swap --vgname=rhel
 
 # applications and services 
