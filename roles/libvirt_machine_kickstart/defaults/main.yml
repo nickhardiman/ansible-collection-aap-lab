@@ -1,6 +1,7 @@
 ---
 # defaults file 
 
+kickstart_path: "/var/tmp"
 kickstart_file: "{{ fqdn }}.ks"
 # user_admin_password: "{{ default_password }}"
 # user_ansible_password: "{{ default_password }}"
