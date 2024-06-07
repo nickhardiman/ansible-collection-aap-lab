@@ -128,6 +128,11 @@ echo "{{ user_admin_name }}      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d
 # https://github.com/nickhardiman/ansible-playbook-aap2-refarch/blob/main/files/aap-bootstrap-1-ssh-sudo.sh
 echo "PS1='[\u@\H \W]$ '" >> /home/{{ user_admin_name }}/.bashrc
 
+# !!! commands to edit "authorized_keys"?
+# why not use "sshkey" instead?
+#   sshkey --user {{ user_ansible_name }} "{{ user_ansible_public_key }}"
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html-single/performing_an_advanced_rhel_9_installation/index#sshkey_kickstart-commands-for-system-configuration
+#
 # ansible user
 # key-based login
 mkdir -m0700 /home/{{ user_ansible_name }}/.ssh/
