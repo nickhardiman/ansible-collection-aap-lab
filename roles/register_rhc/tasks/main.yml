@@ -1,39 +1,27 @@
 ---
-# tasks file 
+# tasks file
 
+# reference
+# https://access.redhat.com/articles/rhc
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/automating_system_administration_by_using_rhel_system_roles/using-the-rhc-system-role-to-register-the-system_automating-system-administration-by-using-rhel-system-roles
+# packages
+# rhc                  connects the system to Red Hat hosted services
+# rhc-worker-playbook  is a Python worker for Red Hat connector that launches Ansible Runner
 
+- name: Install required packages
+  ansible.builtin.dnf:
+    name:
+      - rhc
+      - rhc-worker-playbook
+    state: present
 
-
-# !!! TODO
-
-
-
-# check 
-# If status check passes, 
-# assume this server is already registered to insights.
-- name: "Is {{ fqdn }} already registered to insights? "
-  ansible.builtin.command: 
-    cmd: /usr/bin/insights-client --status
-  register: r_ic_status
-  ignore_errors: yes
-- name: "registered?"
-  ansible.builtin.set_fact:
-    f_ic_registered: "{{ not r_ic_status.failed }}"
-- ansible.builtin.debug:
-    var: f_ic_registered
-
-
-# !!! many failures trying to use 
-# https://console.redhat.com/ansible/automation-hub/repo/published/redhat/rhel_system_roles/content/role/rhc/
-# probably due to proxy settings.  
-# ??? no setting in /etc/insights-client/insights-client.conf
-# see 
-#    !!! proxy bypass list missing. 
-# in satellite_repo_consumer role. 
-#    tail -f /var/log/insights-client/insights-client.log 
-# on managed node.
-
-- name: "Register this system with Red Hat Insights"
-  ansible.builtin.shell:
-    cmd: insights-client --register
-  when: not f_ic_registered
+- ansible.builtin.include_role:
+    name: redhat.rhel_system_roles.rhc
+  vars:
+    rhc_auth:
+      login:
+        username: "{{ rhsm_user }}"
+        password: "{{ rhsm_password }}"
+    rhc_proxy:
+      hostname: "{{ server_proxy_hostname }}"
+      port: "{{ server_proxy_port }}"
