@@ -1,5 +1,13 @@
 = iso_rhel_download
 
+A simpler version of the far superior 
+https://github.com/sscheib/ansible-role-rhel_iso_kickstart/[ansible-role-rhel_iso_kickstart role by Steffen Scheib].
+Check out this code:
+https://github.com/sscheib/ansible-role-rhel_iso_kickstart/blob/main/tasks/download_iso.yml
+This smaller version is more fitting for my smaller brain.
+🧠 <-- actual size
+
+
 I wrote role https://github.com/nickhardiman/ansible-collection-platform/tree/main/roles/iso_rhel_download
 to download RHEL install DVD ISO files after the hypervisor is installed.
 ISO files can be downloaded using one of Red Hat's APIs.
