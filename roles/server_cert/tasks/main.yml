@@ -2,7 +2,9 @@
 # tasks file for server_cert
 
 # trust the CA certificate and create a server certificate
-#
+# reference
+# https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_csr_module.html
+
 # files used on the controller node
 # CA private key
 #    password protected?
@@ -24,7 +26,7 @@
 # view certificate SANs (subject alternative names)
 #    openssl x509 -in /etc/pki/tls/certs/{{ server_cn }}.pem -ext subjectAltName  -noout
 
-# key usage
+# X509v3 Key Usage
 # Satellite requires the 'Key Encipherment' key usage.
 # Chrome throws error ERR_SSL_KEY_USAGE_INCOMPATIBLE with only 'Key Encipherment'
 # so include digitalSignature, nonRepudiation, and keyEncipherment.
@@ -32,8 +34,13 @@
 # Key usage options are listed here.
 #   https://www.openssl.org/docs/manmaster/man5/x509v3_config.html
 # options
-# digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, 
-# keyAgreement, keyCertSign, cRLSign, encipherOnly, and decipherOnly.
+#   digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, 
+#   keyAgreement, keyCertSign, cRLSign, encipherOnly, and decipherOnly.
+# X509v3 Extended Key Usage
+# Satellite may need these.
+#   TLS Web Server Authentication, TLS Web Client Authentication, Code Signing, E-mail Protection
+# options
+#   serverAuth, clientAuth, codeSigning, emailProtection, timeStamping, OCSPSigning, ipsecIKE, msCodeInd, msCodeCom, msCTLSign, msEFS  
 
 # CA certificate 
 #
@@ -71,8 +78,12 @@
       - digitalSignature
       - nonRepudiation
       - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+      - clientAuth
+      - codeSigning
+      - emailProtection
   register: r_csr
-
 
 
 # server certificate
