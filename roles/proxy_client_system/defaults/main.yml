@@ -1,3 +1,4 @@
 ---
 # defaults file
-proxy_server: gateway.supply.example.com
+server_proxy_hostname: proxy.example.com
+server_proxy_port: 3128

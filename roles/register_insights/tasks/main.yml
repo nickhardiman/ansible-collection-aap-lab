@@ -1,6 +1,14 @@
 ---
 # tasks file 
 
+# proxy
+# insights-client reads proxy settings from here.
+#  /etc/rhsm/rhsm.conf
+#  /etc/insights-client/insights-client.conf
+# reference
+# Accessing Red Hat Insights through a Firewall/Proxy
+# https://access.redhat.com/solutions/1583183
+
 # check 
 # If status check passes, 
 # assume this server is already registered to insights.

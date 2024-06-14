@@ -24,6 +24,16 @@
 # view certificate SANs (subject alternative names)
 #    openssl x509 -in /etc/pki/tls/certs/{{ server_cn }}.pem -ext subjectAltName  -noout
 
+# key usage
+# Satellite requires the 'Key Encipherment' key usage.
+# Chrome throws error ERR_SSL_KEY_USAGE_INCOMPATIBLE with only 'Key Encipherment'
+# so include digitalSignature, nonRepudiation, and keyEncipherment.
+# Firefox doesn't care.
+# Key usage options are listed here.
+#   https://www.openssl.org/docs/manmaster/man5/x509v3_config.html
+# options
+# digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, 
+# keyAgreement, keyCertSign, cRLSign, encipherOnly, and decipherOnly.
 
 # CA certificate 
 #
@@ -57,7 +67,13 @@
     privatekey_path: "/etc/pki/tls/private/{{ server_cn }}.key"
     common_name: "{{ server_cn }}"
     subject_alt_name: "{{ subject_alt_name | default(omit) }}"
+    key_usage:
+      - digitalSignature
+      - nonRepudiation
+      - keyEncipherment
   register: r_csr
+
+
 
 # server certificate
 #
