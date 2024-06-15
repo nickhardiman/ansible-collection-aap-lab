@@ -66,7 +66,7 @@ frontend www_https
   tcp-request inspect-delay 5s
   tcp-request content accept if tls
 
-  # AAP in site1
+# site1
   #
   # Three paths lead to the AAP controller's load balancer.
   # 1. from a machine in the home lab
@@ -83,7 +83,8 @@ frontend www_https
   use_backend https_aapcontrol_site1 if host_aapcontrol_site1
   use_backend https_aaphub_site1     if host_aaphub_site1
 
-  # AAP in site2
+# site2
+  #
   acl host_aapcontrol_site2  req.ssl_sni -i     controlplane.site2.example.com
   acl host_aapcontrol_site2  req.ssl_sni -i     controlplane-site2.home
   # acl host_aapcontrol_site2  req.ssl_sni -i     controlplane-site2.mydomain.com
@@ -94,6 +95,12 @@ frontend www_https
   #
   use_backend https_aapcontrol_site2 if host_aapcontrol_site2
   use_backend https_aaphub_site2     if host_aaphub_site2
+
+# site3
+  #
+  acl host_satellite_site3  req.ssl_sni -i     satellite.site3.example.com
+  acl host_satellite_site3  req.ssl_sni -i     satellite-site3.home
+  # acl host_satellite_site3  req.ssl_sni -i     satellite-site3.mydomain.com
 
 #---------------------------------------------------------------------
 # https://www.haproxy.com/documentation/haproxy-configuration-tutorials/core-concepts/stick-tables/
