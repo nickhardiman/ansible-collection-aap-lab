@@ -80,6 +80,11 @@ frontend www_https
   acl host_aaphub_site1      req.ssl_sni -i     automationhub-site1.home
   acl host_aaphub_site1      req.ssl_sni -i     automationhub-site1.hardiman.consulting
   #
+  # !!! incomplete
+  # acl host_keycloak_site1    req.ssl_sni -i     misc-rhel8.site1.example.com
+  # acl host_keycloak_site1    req.ssl_sni -i     misc-rhel8-site1.home
+  # acl host_keycloak_site1    req.ssl_sni -i     misc-rhel8-site1.hardiman.consulting
+  #
   use_backend https_aapcontrol_site1 if host_aapcontrol_site1
   use_backend https_aaphub_site1     if host_aaphub_site1
 
