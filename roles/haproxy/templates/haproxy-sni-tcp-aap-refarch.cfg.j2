@@ -73,12 +73,12 @@ frontend www_https
   acl host_aapcontrol_site1  req.ssl_sni -i     controlplane.site1.example.com
   # 2. from the home network
   acl host_aapcontrol_site1  req.ssl_sni -i     controlplane-site1.home
-  # 3. from the Internet
-  # acl host_aapcontrol_site1  req.ssl_sni -i     controlplane-site1.mydomain.com
+  # 3. from the Internet (unlikely)
+  acl host_aapcontrol_site1  req.ssl_sni -i     controlplane-site1.hardiman.consulting
   #
   acl host_aaphub_site1      req.ssl_sni -i     automationhub.site1.example.com
   acl host_aaphub_site1      req.ssl_sni -i     automationhub-site1.home
-  # acl host_aaphub_site1      req.ssl_sni -i     automationhub-site1.mydomain.com
+  acl host_aaphub_site1      req.ssl_sni -i     automationhub-site1.hardiman.consulting
   #
   use_backend https_aapcontrol_site1 if host_aapcontrol_site1
   use_backend https_aaphub_site1     if host_aaphub_site1
@@ -87,11 +87,11 @@ frontend www_https
   #
   acl host_aapcontrol_site2  req.ssl_sni -i     controlplane.site2.example.com
   acl host_aapcontrol_site2  req.ssl_sni -i     controlplane-site2.home
-  # acl host_aapcontrol_site2  req.ssl_sni -i     controlplane-site2.mydomain.com
+  acl host_aapcontrol_site2  req.ssl_sni -i     controlplane-site2.hardiman.consulting
   #
   acl host_aaphub_site2      req.ssl_sni -i     automationhub.site2.example.com
   acl host_aaphub_site2      req.ssl_sni -i     automationhub-site2.home
-  # acl host_aaphub_site2      req.ssl_sni -i     automationhub-site2.home
+  acl host_aaphub_site2      req.ssl_sni -i     automationhub-site2.hardiman.consulting
   #
   use_backend https_aapcontrol_site2 if host_aapcontrol_site2
   use_backend https_aaphub_site2     if host_aaphub_site2
@@ -100,7 +100,9 @@ frontend www_https
   #
   acl host_satellite_site3  req.ssl_sni -i     satellite.site3.example.com
   acl host_satellite_site3  req.ssl_sni -i     satellite-site3.home
-  # acl host_satellite_site3  req.ssl_sni -i     satellite-site3.mydomain.com
+  acl host_satellite_site3  req.ssl_sni -i     satellite-site3.hardiman.consulting
+  #
+  use_backend https_satellite_site3 if host_satellite_site3
 
 #---------------------------------------------------------------------
 # https://www.haproxy.com/documentation/haproxy-configuration-tutorials/core-concepts/stick-tables/
@@ -133,6 +135,7 @@ peers sticktables
 # proxy to where
 #
 
+# site1
 backend https_aapcontrol_site1
   mode tcp
   balance roundrobin
@@ -153,6 +156,7 @@ backend https_aaphub_site1
   server  automationhub-2.site1.example.com  192.168.21.18:443
   server  automationhub-3.site1.example.com  192.168.21.19:443
 
+# site2
 backend https_aapcontrol_site2
   mode tcp
   balance roundrobin
@@ -172,6 +176,14 @@ backend https_aaphub_site2
   server  automationhub-1.site2.example.com  192.168.23.17:443
   server  automationhub-2.site2.example.com  192.168.23.18:443
   server  automationhub-3.site2.example.com  192.168.23.19:443
+
+# site3
+backend https_satellite_site3
+  mode tcp
+  # balance roundrobin
+  # there is only one server so no sticky session required
+  option ssl-hello-chk
+  server  satellite.site3.example.com  192.168.25.5:443
 
 #---------------------------------------------------------------------
 # dashboard
