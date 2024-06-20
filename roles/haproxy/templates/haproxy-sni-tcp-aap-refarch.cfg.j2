@@ -98,6 +98,12 @@ frontend www_https
   #
   use_backend https_keycloak_site1     if host_keycloak_site1
 
+  acl host_cockpit_site1  req.ssl_sni -i     cockpit.site1.example.com
+  acl host_cockpit_site1  req.ssl_sni -i     cockpit-site1.home
+  acl host_cockpit_site1  req.ssl_sni -i     cockpit-site1.hardiman.consulting
+  #
+  use_backend https_cockpit_site1 if host_cockpit_site1
+
 
 # site2
 
@@ -118,6 +124,12 @@ frontend www_https
   acl host_keycloak_site2    req.ssl_sni -i     misc-rhel8-site2.hardiman.consulting
   #
   use_backend https_keycloak_site2     if host_keycloak_site2
+
+  acl host_cockpit_site2  req.ssl_sni -i     cockpit.site2.example.com
+  acl host_cockpit_site2  req.ssl_sni -i     cockpit-site2.home
+  acl host_cockpit_site2  req.ssl_sni -i     cockpit-site2.hardiman.consulting
+  #
+  use_backend https_cockpit_site2 if host_cockpit_site2
 
 
 # site3
@@ -192,6 +204,14 @@ backend https_keycloak_site1
   option ssl-hello-chk
   server  misc-rhel8.site1.example.com  192.168.21.21:8443
 
+# SELinux will stop haproxy connecting to port 9090.
+# Fix
+#   setsebool -P haproxy_connect_any on
+backend https_cockpit_site1
+  mode tcp
+  option ssl-hello-chk
+  server  host.site1.example.com  192.168.1.253:9090
+
 
 # site2
 
@@ -220,6 +240,11 @@ backend https_keycloak_site2
   option ssl-hello-chk
   server  misc-rhel8.site2.example.com  192.168.23.21:8443
 
+backend https_cockpit_site2
+  mode tcp
+  option ssl-hello-chk
+  server  host.site2.example.com  192.168.1.162:9090
+
 
 # site3
 
@@ -230,9 +255,6 @@ backend https_satellite_site3
   option ssl-hello-chk
   server  satellite.site3.example.com  192.168.25.5:443
 
-# SELinux will stop haproxy connecting to port 9090.
-# Fix
-#   setsebool -P haproxy_connect_any on
 backend https_cockpit_site3
   mode tcp
   option ssl-hello-chk
