@@ -146,6 +146,17 @@ frontend www_https
   #
   use_backend https_cockpit_site3 if host_cockpit_site3
 
+#   acl host_www_site3  req.ssl_sni -i     www.example.com
+#   acl host_www_site3  req.ssl_sni -i     www.home
+#   acl host_www_site3  req.ssl_sni -i     www.hardiman.consulting
+#   acl host_www_site3  req.ssl_sni -i     antora.hardiman.consulting
+#   acl host_www_site3  req.ssl_sni -i     hardiman.consulting
+#   #
+#   use_backend https_www_local if host_www_site3
+# UNFINISHED
+# NO BACKEND YET
+
+
 #---------------------------------------------------------------------
 # https://www.haproxy.com/documentation/haproxy-configuration-tutorials/core-concepts/stick-tables/
 # https://www.haproxy.com/blog/load-balancing-affinity-persistence-sticky-sessions-what-you-need-to-know
