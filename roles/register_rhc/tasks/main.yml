@@ -33,19 +33,20 @@
 
 # !!! duplicate of task in
 # ansible_collections/redhat/rhel_system_roles/roles/rhc/tasks/insights-client.yml 
-- name: Install required packages
-  ansible.builtin.dnf:
-    name:
-      - rhc
-      - rhc-worker-playbook
-      - ansible-core
-    state: present
-  register: r_rhc_pkg
-
-- name: Display result
-  ansible.builtin.debug:
-    var: r_rhc_pkg
-    verbosity: 1
+# - name: Install required packages
+#   ansible.builtin.yum:
+#     name:
+#       - rhc
+#       - rhc-worker-playbook
+#       - ansible-core
+#     state: present
+#   when: ansible_distribution_major_version > 7
+#   register: r_rhc_pkg
+#
+# - name: Display result
+#   ansible.builtin.debug:
+#     var: r_rhc_pkg
+#     verbosity: 1
 
 - name: Register with rhc
   ansible.builtin.include_role:
