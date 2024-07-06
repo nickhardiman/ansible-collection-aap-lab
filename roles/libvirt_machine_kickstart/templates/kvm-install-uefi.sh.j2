@@ -9,6 +9,7 @@ virt-install   \
 {% for nic in hostvars[fqdn]['nics'] %}
   --network="network={{ nic.net }},mac={{ nic.mac }}"  \
 {% endfor %}
+  --boot="uefi,hd,menu=on"  \
   --location="{{ hostvars[fqdn]['install_iso'] }}"  \
   --initrd-inject="{{ kickstart_path }}/{{ kickstart_file }}"  \
   --extra-args "inst.ks=file:/{{ kickstart_file }} console=tty0 console=ttyS0,115200"   \
